@@ -36,6 +36,9 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: App icon
+        run: npx --yes @capacitor/assets generate --android
+
       - name: Set version (number from index.html, build code auto-increases)
         run: |
           VER=$(grep -oP "APP_VERSION = '\K[^']+" index.html || echo "1.0")
