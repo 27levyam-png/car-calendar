@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>יומן הרכב</title>
+<style>
+/* ===== צבעים ===== */
+:root{
+  --fam:#f6aaaa;   /* משפחה / אמא – אדום בהיר */
+  --pri:#f9e07f;   /* פרטי – צהוב בהיר */
+  --free:#c4ecc4;  /* פנוי – ירוק בהיר */
+  --sh:#ffffff;    /* שבת – לבן */
+  --bg:#eef1f5; --card:#fff; --txt:#1f2933; --mut:#6b7280; --acc:#1e5aa8; --bd:#d6dbe2;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--txt);-webkit-tap-highlight-color:transparent}
+button,select,input{font:inherit}
+.hidden{display:none!important}
+header{background:#1e3a5f;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;flex:1}
+header .who{font-size:13px;opacity:.85}
+.hbtn{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+.wrap{max-width:900px;margin:0 auto;padding:10px}
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:10px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600}
+.btn.sec{background:#e5e9ef;color:var(--txt)}
+.btn.red{background:#c0392b}
+.btn.big{width:100%;padding:14px;font-size:17px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+select,input{border:1px solid var(--bd);border-radius:8px;padding:8px;background:#fff;color:var(--txt)}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+/* ===== חודש ===== */
+.mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mnav .t{text-align:center}
+.mnav .t b{font-size:18px;display:block}
+.mnav .t span{font-size:13px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dh{text-align:center;font-size:12px;color:var(--mut);padding:2px 0}
+.cell{background:#fff;border:1px solid var(--bd);border-radius:8px;min-height:104px;padding:3px 4px 0;cursor:pointer;display:flex;flex-direction:column;overflow:hidden}
+.bands{flex:1;display:flex;flex-direction:column;margin:3px -4px 0;border-top:1px solid var(--bd)}
+.bands div{flex:1;border-top:1px dashed rgba(0,0,0,.12);font-size:9px;color:rgba(0,0,0,.45);padding:1px 3px;line-height:1.1}
+.bands div:first-child{border-top:0}
+.cell.empty{background:transparent;border:0;cursor:default}
+.cell.today{border:2px solid var(--acc)}
+.cell .n{display:flex;justify-content:space-between;font-size:13px}
+.cell .n b{font-size:15px}
+.cell .n i{font-style:normal;color:var(--mut);font-size:12px}
+.cell .bar{margin:auto -4px 0;height:20px;border-top:1px solid var(--bd)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-left:4px;vertical-align:-2px;border:1px solid var(--bd);background:var(--c)}
+/* ===== מסכים צפים ===== */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:94vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:16px}}
+.sh-head{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--bd)}
+.sh-head h2{font-size:17px;margin:0;flex:1}
+.sh-body{overflow:auto;padding:12px}
+.x{background:#e5e9ef;border:0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px}
+/* ===== יום ===== */
+.tl{position:relative;margin-right:46px;border-right:1px solid var(--bd)}
+.hr{position:absolute;right:-46px;width:40px;text-align:left;font-size:11px;color:var(--mut);transform:translateY(-6px)}
+.hl{position:absolute;left:0;right:0;border-top:1px solid rgba(0,0,0,.07)}
+.blk{position:absolute;border-radius:8px;padding:4px 6px;font-size:13px;border:1px solid rgba(0,0,0,.15);overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.blk.fam{background:var(--fam)} .blk.pri{background:var(--pri)}
+.blk b{display:block}
+.blk .del{position:absolute;top:3px;left:4px;background:rgba(255,255,255,.8);border:0;border-radius:6px;cursor:pointer;font-size:12px;padding:2px 6px}
+.list-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;margin-bottom:6px}
+.list-item.fam{background:var(--fam)} .list-item.pri{background:var(--pri)}
+.list-item div{flex:1}
+select.fam{background:var(--fam)} select.pri{background:var(--pri)}
+/* ===== כניסה ===== */
+.names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.names button{padding:14px;border:2px solid var(--bd);border-radius:10px;background:#fff;cursor:pointer;font-size:16px}
+.names button.on{border-color:var(--acc);background:#e8f0fb;font-weight:700}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:50;font-size:14px;max-width:90%;text-align:center}
+.sync{font-size:11px;opacity:.75}
+</style>
+</head>
+<body>
+
+<!-- ===== מסך כניסה ===== -->
+<div id="login" class="wrap hidden">
+  <div class="card" style="margin-top:30px">
+    <h2 style="margin-top:0;text-align:center">🚗 יומן הרכב המשפחתי</h2>
+    <label>מי נכנס?</label>
+    <div class="names" id="loginNames"></div>
+    <label>קוד כניסה</label>
+    <input id="loginPin" type="password" inputmode="numeric" style="width:100%">
+    <div style="margin-top:14px"><button class="btn big" onclick="doLogin()">כניסה</button></div>
+    <p style="text-align:center;margin:14px 0 0"><a href="#" onclick="toggleSrv(event)" style="font-size:13px">חיבור לשרת</a></p>
+    <div id="loginSrv" class="hidden"></div>
+    <p style="text-align:center;font-size:11px;color:var(--mut);margin:10px 0 0" id="verLogin"></p>
+  </div>
+</div>
+
+<!-- ===== מסך ראשי ===== -->
+<div id="main" class="hidden">
+  <header>
+    <h1>🚗 יומן הרכב</h1>
+    <span class="who" id="who"></span>
+    <button class="hbtn" onclick="openSettings()">⚙️</button>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <div class="mnav">
+        <button class="btn sec" onclick="moveMonth(-1)">→</button>
+        <div class="t"><b id="mTitle"></b><span id="mHeb"></span></div>
+        <button class="btn sec" onclick="moveMonth(1)">←</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="legend">
+        <span style="--c:var(--fam)">משפחה / אמא</span>
+        <span style="--c:var(--pri)">פרטי</span>
+        <span style="--c:var(--free)">פנוי</span>
+        <span style="--c:#fff">שבת וחג</span>
+      </div>
+      <div style="font-size:12px;color:var(--mut);margin-top:4px">כל יום מחולק לבוקר (עד 14) / צהריים (14–18) / ערב (18–24). לשעות מדויקות – לחצו על היום.</div>
+      <div class="row" style="justify-content:space-between;margin-top:6px">
+        <span class="sync" id="syncInfo"></span>
+        <button class="btn sec" style="padding:4px 10px;font-size:13px" onclick="goToday()">היום</button>
+      </div>
+    </div>
+    <button class="btn big" onclick="openRequest()">➕ בקשה לרכב</button>
+  </div>
+</div>
+
+<div id="overlays"></div>
+<div id="toast" class="hidden"></div>
+
+<script>
+/* =========================================================
+   הגדרות שרת – אפשר להדביק כאן ישירות (ואז לא צריך להזין באפליקציה)
+   ========================================================= */
+const SUPABASE_URL = 'https://ivvkwbzzfcnvebbrmucu.supabase.co';   // לדוגמה: https://xxxxx.supabase.co
+const SUPABASE_KEY = 'sb_publishable_Q-pbwF73mllXT3miUiWCmQ_bvIsvhqr';   // ה-anon / publishable key
+
+const APP_VERSION = '1.1';   // לעדכן בכל גרסה חדשה
+
+const DRIVERS = ['אברהם','בצלאל','בת שבע','צופיה'];
+const PURPOSE = { family:{label:'לצורך משפחה / אמא',short:'משפחה',cls:'fam'}, private:{label:'לצורך פרטי',short:'פרטי',cls:'pri'} };
+const DAYS = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+const DAYNAMES = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const GMONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const HOUR_PX = 44;
+
+/* ---------- אחסון מקומי ---------- */
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- עזרי תאריך ---------- */
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse = s => { const [a,b,c]=s.split('-').map(Number); return new Date(a,b-1,c); };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const hm = m => pad(Math.floor(m/60))+':'+pad(m%60);
+
+/* ---------- לוח עברי ---------- */
+function gem(n){
+  const ones=['','א','ב','ג','ד','ה','ו','ז','ח','ט'], tens=['','י','כ','ל','מ','נ','ס','ע','פ','צ'],
+        hund=['','ק','ר','ש','ת','תק','תר','תש','תת','תתק'];
+  n%=1000; let s=hund[Math.floor(n/100)]; const r=n%100;
+  if(r===15) s+='טו'; else if(r===16) s+='טז'; else s+=tens[Math.floor(r/10)]+ones[r%10];
+  return s.length===1 ? s+'׳' : s.slice(0,-1)+'״'+s.slice(-1);
+}
+const fHebEn = new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long',year:'numeric'});
+const fHebHe = new Intl.DateTimeFormat('he-u-ca-hebrew',{month:'long'});
+const hebCache = {};
+function heb(d){
+  const k=ymd(d); if(hebCache[k]) return hebCache[k];
+  const p={}; fHebEn.formatToParts(d).forEach(x=>p[x.type]=x.value);
+  return hebCache[k]={ day:parseInt(p.day), monthEn:p.month, year:parseInt(p.year), month:fHebHe.format(d) };
+}
+const hebStr = d => { const h=heb(d); return gem(h.day)+' '+h.month+' '+gem(h.year); };
+// ימים טובים (בארץ): ר"ה, יוה"כ, סוכות, שמיני עצרת, פסח א' ושביעי, שבועות
+const HOL = { Tishri:[1,2,10,15,22], Nisan:[15,21], Sivan:[6] };
+function isRest(d){ if(d.getDay()===6) return true; const h=heb(d); return (HOL[h.monthEn]||[]).includes(h.day); }
+
+/* ---------- שכבת נתונים (שרת או מקומי) ---------- */
+function cfg(){ const c=LS.get('car_cfg',{}); return { url:(c.url||SUPABASE_URL).trim().replace(/\/$/,''), key:(c.key||SUPABASE_KEY).trim() }; }
+const remote = () => { const c=cfg(); return !!(c.url && c.key); };
+async function rq(method,path,body,prefer){
+  const c=cfg();
+  const r=await fetch(c.url+'/rest/v1/'+path,{ method,
+    headers:Object.assign({ apikey:c.key, 'Content-Type':'application/json', Prefer:prefer||'return=representation' }, c.key.startsWith('eyJ')?{Authorization:'Bearer '+c.key}:{}),
+    body: body?JSON.stringify(body):undefined });
+  if(!r.ok) throw new Error(await r.text());
+  const t=await r.text(); return t?JSON.parse(t):null;
+}
+function Ld(){ return LS.get('car_local',{ bookings:[], recurring:[], users:DRIVERS.map((n,i)=>({name:n,pin:String(i+1).repeat(4)})), settings:{}, seq:1 }); }
+const Ls = d => LS.set('car_local',d);
+const enc = encodeURIComponent;
+
+const api = {
+  async bookings(from,to){
+    if(remote()) return rq('GET',`car_bookings?day=gte.${from}&day=lte.${to}&order=start_min`);
+    return Ld().bookings.filter(b=>b.day>=from && b.day<=to);
+  },
+  async addBooking(b){ if(remote()) return rq('POST','car_bookings',b); const d=Ld(); b.id=d.seq++; d.bookings.push(b); Ls(d); },
+  async addBookings(arr){ if(remote()) return rq('POST','car_bookings',arr); const d=Ld(); arr.forEach(b=>{ b.id=d.seq++; d.bookings.push(b); }); Ls(d); },
+  async delBooking(id){ if(remote()) return rq('DELETE','car_bookings?id=eq.'+id); const d=Ld(); d.bookings=d.bookings.filter(b=>b.id!==id); Ls(d); },
+  async delGroup(g){ if(remote()) return rq('DELETE','car_bookings?grp=eq.'+enc(g)); const d=Ld(); d.bookings=d.bookings.filter(b=>b.grp!==g); Ls(d); },
+  async recurring(){ if(remote()) return rq('GET','car_recurring?order=weekday,start_min'); return Ld().recurring; },
+  async addRecurring(r){ if(remote()) return rq('POST','car_recurring',r); const d=Ld(); r.id=d.seq++; d.recurring.push(r); Ls(d); },
+  async delRecurring(id){ if(remote()) return rq('DELETE','car_recurring?id=eq.'+id); const d=Ld(); d.recurring=d.recurring.filter(b=>b.id!==id); Ls(d); },
+  async checkPin(name,pin){
+    if(remote()){ const r=await rq('GET',`car_users?name=eq.${enc(name)}&pin=eq.${enc(pin)}&select=name`); return r.length>0; }
+    return Ld().users.some(u=>u.name===name && u.pin===pin);
+  },
+  async setPin(name,pin){ if(remote()) return rq('PATCH',`car_users?name=eq.${enc(name)}`,{pin}); const d=Ld(); d.users.find(u=>u.name===name).pin=pin; Ls(d); },
+  async getShabbat(){
+    if(remote()){ const r=await rq('GET','car_settings?key=eq.shabbat'); return r[0]?JSON.parse(r[0].value):null; }
+    return Ld().settings.shabbat||null;
+  },
+  async setShabbat(v){
+    if(remote()) return rq('POST','car_settings?on_conflict=key',{key:'shabbat',value:JSON.stringify(v)},'resolution=merge-duplicates,return=representation');
+    const d=Ld(); d.settings.shabbat=v; Ls(d);
+  }
+};
+
+/* ---------- מצב ---------- */
+const now=new Date();
+const S = { user:LS.get('car_user',null), y:now.getFullYear(), m:now.getMonth(), bookings:[], loadedRange:null,
+            recurring:[], sh:{fri:16*60, sat:18*60}, openDay:null, lastSync:null };
+
+/* ---------- חישוב תפוסה ליום ---------- */
+function itemsFor(ds,list){
+  const wd=parse(ds).getDay();
+  const one=(list||S.bookings).filter(b=>b.day===ds);
+  const rec=S.recurring.filter(r=>r.weekday===wd).map(r=>({...r,day:ds,rec:true}));
+  return one.concat(rec).sort((a,b)=>a.start_min-b.start_min);
+}
+function shabbatAt(ds,m){
+  const d=parse(ds), r0=isRest(d), r1=isRest(addDays(d,1));
+  return (r0 && (m<S.sh.sat || r1)) || (r1 && m>=S.sh.fri);
+}
+function slots(ds){
+  const items=itemsFor(ds), out=[];
+  for(let i=0;i<96;i++){
+    const a=i*15, b=a+15; let s='free';
+    if(shabbatAt(ds,a)) s='sh';
+    else for(const it of items){ if(it.start_min<b && it.end_min>a){ if(it.purpose==='family'){ s='fam'; break; } s='pri'; } }
+    out.push(s);
+  }
+  return out;
+}
+// בוקר 00–14, צהריים 14–18, ערב 18–24 (במשבצות של 15 דק')
+const PCOL={free:'var(--free)',fam:'var(--fam)',pri:'var(--pri)',sh:'#fff'};
+function periods(sl){
+  return [[0,56],[56,72],[72,96]].map(([a,b])=>{
+    const s=sl.slice(a,b);
+    if(s.includes('fam')) return 'fam';
+    if(s.includes('pri')) return 'pri';
+    if(s.filter(x=>x==='sh').length*2>=s.length) return 'sh';
+    return 'free';
+  });
+}
+function gradient(sl,dir){
+  const col={free:'var(--free)',fam:'var(--fam)',pri:'var(--pri)',sh:'#fff'}; const parts=[]; let st=0;
+  for(let i=1;i<=96;i++) if(i===96 || sl[i]!==sl[st]){ parts.push(`${col[sl[st]]} ${(st/96*100).toFixed(2)}% ${(i/96*100).toFixed(2)}%`); st=i; }
+  return `linear-gradient(${dir},${parts.join(',')})`;
+}
+
+/* ---------- טעינה וסנכרון ---------- */
+async function load(force){
+  const from=ymd(new Date(S.y,S.m,1)), to=ymd(new Date(S.y,S.m+1,0));
+  try{
+    const [b,r,sh]=await Promise.all([api.bookings(from,to), api.recurring(), api.getShabbat()]);
+    S.bookings=b; S.recurring=r; if(sh) S.sh=sh; S.loadedRange=[from,to]; S.lastSync=new Date();
+    $('syncInfo').textContent=(remote()?'מסונכרן ':'מצב מקומי (לא מחובר לשרת) · ')+hm(S.lastSync.getHours()*60+S.lastSync.getMinutes());
+  }catch(e){ $('syncInfo').textContent='⚠️ אין חיבור לשרת'; if(force) toast('שגיאת חיבור: '+e.message.slice(0,120)); }
+  renderMonth(); if(S.openDay) renderDay(S.openDay);
+}
+async function ensureMonthOf(ds){ const d=parse(ds); if(d.getFullYear()!==S.y || d.getMonth()!==S.m){ S.y=d.getFullYear(); S.m=d.getMonth(); await load(); } }
+setInterval(()=>{ if(S.user && !document.hidden) load(); }, 60*60*1000); // פעם בשעה + בכל פתיחה
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && S.user) load(); });
+
+/* ---------- תצוגה חודשית ---------- */
+const $ = id => document.getElementById(id);
+function renderMonth(){
+  $('mTitle').textContent=GMONTHS[S.m]+' '+S.y;
+  const first=new Date(S.y,S.m,1), last=new Date(S.y,S.m+1,0);
+  const h1=heb(first), h2=heb(last);
+  $('mHeb').textContent = h1.month===h2.month ? h1.month+' '+gem(h1.year) :
+    h1.month+(h1.year!==h2.year?' '+gem(h1.year):'')+' – '+h2.month+' '+gem(h2.year);
+  let html=DAYS.map(d=>`<div class="dh">${d}</div>`).join('');
+  for(let i=0;i<first.getDay();i++) html+='<div class="cell empty"></div>';
+  const today=ymd(new Date());
+  for(let day=1; day<=last.getDate(); day++){
+    const d=new Date(S.y,S.m,day), ds=ymd(d);
+    html+=`<div class="cell${ds===today?' today':''}" onclick="openDay('${ds}')">
+      <div class="n"><b>${day}</b><i>${gem(heb(d).day)}</i></div>
+      <div class="bands">${periods(slots(ds)).map((p,i)=>`<div style="background:${PCOL[p]}">${['בוקר','צהריים','ערב'][i]}</div>`).join('')}</div></div>`;
+  }
+  $('grid').innerHTML=html;
+}
+function moveMonth(n){ S.m+=n; if(S.m<0){S.m=11;S.y--;} if(S.m>11){S.m=0;S.y++;} renderMonth(); load(); }
+function goToday(){ const t=new Date(); S.y=t.getFullYear(); S.m=t.getMonth(); renderMonth(); load(); }
+
+/* ---------- חלונות ---------- */
+function sheet(id,title,body){
+  closeSheet(id);
+  const ov=document.createElement('div'); ov.className='ov'; ov.id=id;
+  ov.innerHTML=`<div class="sheet"><div class="sh-head"><h2>${title}</h2><button class="x" onclick="closeSheet('${id}')">✕</button></div><div class="sh-body">${body}</div></div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) closeSheet(id); });
+  $('overlays').appendChild(ov); return ov;
+}
+function closeSheet(id){ const el=$(id); if(el) el.remove(); if(id==='day') S.openDay=null; }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.add('hidden'),3200); }
+
+/* ---------- תצוגת יום ---------- */
+function openDay(ds){ S.openDay=ds; renderDay(ds, true); }
+function renderDay(ds, first){
+  const d=parse(ds);
+  const title=`יום ${DAYNAMES[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} · ${hebStr(d)}`;
+  const items=itemsFor(ds);
+  // עמודות לחפיפות
+  const placed=[]; items.forEach(it=>{ const clash=placed.find(p=>p.col===0 && p.it.start_min<it.end_min && p.it.end_min>it.start_min); placed.push({it,col:clash?1:0}); });
+  const anyOverlap=placed.some(p=>p.col===1);
+  let tl=`<div class="tl" style="height:${24*HOUR_PX}px;background:${gradient(slots(ds).map(s=>s==='sh'?'sh':'free'),'to bottom')}">`;
+  for(let h=0;h<24;h++) tl+=`<div class="hr" style="top:${h*HOUR_PX}px">${pad(h)}:00</div><div class="hl" style="top:${h*HOUR_PX}px"></div>`;
+  placed.forEach(({it,col})=>{
+    const top=it.start_min/60*HOUR_PX, h=Math.max(22,(it.end_min-it.start_min)/60*HOUR_PX);
+    const side=anyOverlap?(col===0?'right:4px;width:calc(50% - 6px)':'left:4px;width:calc(50% - 6px)'):'right:4px;left:4px';
+    const mine=it.driver===S.user && !it.rec;
+    tl+=`<div class="blk ${PURPOSE[it.purpose].cls}" style="top:${top}px;height:${h}px;${side}">
+      <b>${it.driver}${it.rec?' 🔁':''}${it.grp?' ↔':''}</b>${hm(it.start_min)}–${hm(it.end_min)} · ${PURPOSE[it.purpose].short}
+      ${mine?`<button class="del" onclick="delBooking(${it.id},${it.grp?`'${it.grp}'`:'null'})">מחק</button>`:''}</div>`;
+  });
+  tl+='</div>';
+  const shNote = slots(ds).includes('sh') ? '<p style="font-size:13px;color:var(--mut)">⚪ השעות הלבנות – שבת / חג</p>' : '';
+  const body=`<button class="btn big" onclick="openRequest('${ds}')">➕ בקשה לרכב ביום זה</button>
+    ${shNote}<div class="card" style="margin-top:10px" id="tlBox">${tl}</div>
+    <p style="font-size:12px;color:var(--mut)">🔁 = זמן קבוע (מנוהל במסך ההגדרות) · ↔ = תפיסה של כמה ימים</p>`;
+  const prevScroll = !first && $('day') ? $('day').querySelector('.sh-body').scrollTop : null;
+  const ov=sheet('day',title,body); S.openDay=ds;
+  const sb=ov.querySelector('.sh-body'); sb.scrollTop = prevScroll!==null ? prevScroll : 6*HOUR_PX;
+}
+async function delBooking(id,grp){
+  if(!confirm(grp?'למחוק את התפיסה (כל הימים שלה)?':'למחוק את התפיסה?')) return;
+  try{ grp ? await api.delGroup(grp) : await api.delBooking(id); toast('נמחק'); await load(); }catch(e){ toast('שגיאה: '+e.message.slice(0,100)); }
+}
+
+/* ---------- רכיבי בחירת שעה ---------- */
+function hourSel(id,val,max){ let o=''; for(let h=0;h<=(max||23);h++) o+=`<option value="${h}"${h===val?' selected':''}>${pad(h)}</option>`; return `<select id="${id}">${o}</select>`; }
+function minSel(id,val){ let o=''; for(let m=0;m<60;m+=5) o+=`<option value="${m}"${m===val?' selected':''}>${pad(m)}</option>`; return `<select id="${id}">${o}</select>`; }
+function purposeSel(id){
+  return `<select id="${id}" onchange="this.className=this.value==='family'?'fam':this.value==='private'?'pri':''" style="width:100%">
+    <option value="">— בחר מטרה —</option><option value="family">${PURPOSE.family.label}</option><option value="private">${PURPOSE.private.label}</option></select>`;
+}
+const readTime = (h,m) => parseInt($(h).value)*60+parseInt($(m).value);
+
+/* ---------- פירוק תפיסה לימים (מדלג על שבת/חג) ---------- */
+function buildSegments(d1,start,d2,end){
+  const segs=[]; let d=parse(d1); const last=parse(d2);
+  while(d<=last){
+    const ds=ymd(d), a=(ds===d1?start:0), b=(ds===d2?end:1440);
+    let runStart=null;
+    for(let m=a;m<=b;m+=5){
+      const free = m<b && !shabbatAt(ds,m);
+      if(free && runStart===null) runStart=m;
+      if(!free && runStart!==null){ segs.push({day:ds,start_min:runStart,end_min:m}); runStart=null; }
+    }
+    d=addDays(d,1);
+  }
+  return segs;
+}
+/* צורך משפחה גובר על פרטי; פרטי לא יכול להיכנס על תפוס */
+function conflict(seg,purpose,list){
+  const clash=itemsFor(seg.day,list).filter(it=>it.start_min<seg.end_min && it.end_min>seg.start_min);
+  const block = clash.find(c=>c.purpose==='family') || (purpose==='private' && clash.find(c=>c.purpose==='private'));
+  if(!block) return null;
+  const d=parse(seg.day);
+  return `הרכב תפוס ב-${d.getDate()}/${d.getMonth()+1} ${hm(block.start_min)}–${hm(block.end_min)} (${block.driver}, ${PURPOSE[block.purpose].short})`;
+}
+
+/* ---------- מסך בקשה לרכב ---------- */
+function openRequest(ds){
+  ds = ds || ymd(new Date());
+  const body=`<div class="card">
+    <label>מתאריך</label><input type="date" id="rqDate" value="${ds}" style="width:100%" onchange="rqDateChanged()">
+    <div id="rqHeb" style="font-size:13px;color:var(--mut);margin-top:4px">${hebStr(parse(ds))}</div>
+    <label>משעה</label><div class="row">${hourSel('rqFH',8)} : ${minSel('rqFM',0)}</div>
+    <label>עד תאריך</label><input type="date" id="rqDate2" value="${ds}" style="width:100%" onchange="rqDateChanged()">
+    <div id="rqHeb2" style="font-size:13px;color:var(--mut);margin-top:4px">${hebStr(parse(ds))}</div>
+    <label>עד שעה</label><div class="row">${hourSel('rqTH',10,24)} : ${minSel('rqTM',0)}</div>
+    <label>מטרה</label>${purposeSel('rqP')}
+    <div class="row" style="margin-top:16px"><button class="btn" style="flex:1" onclick="submitRequest()">✔ אישור</button>
+    <button class="btn sec" onclick="closeSheet('req')">ביטול</button></div></div>`;
+  sheet('req','בקשה לרכב',body);
+}
+function rqDateChanged(){
+  const a=$('rqDate'), b=$('rqDate2');
+  if(a.value && (!b.value || b.value<a.value)) b.value=a.value;
+  $('rqHeb').textContent=a.value?hebStr(parse(a.value)):'';
+  $('rqHeb2').textContent=b.value?hebStr(parse(b.value)):'';
+}
+async function submitRequest(){
+  const d1=$('rqDate').value, d2=$('rqDate2').value;
+  if(!d1 || !d2) return toast('יש לבחור תאריכים');
+  const start=readTime('rqFH','rqFM'); let end=readTime('rqTH','rqTM'); if(parseInt($('rqTH').value)===24) end=24*60;
+  const purpose=$('rqP').value;
+  if(!purpose) return toast('יש לבחור מטרה');
+  if(d2<d1 || (d1===d2 && end<=start)) return toast('הסיום חייב להיות אחרי ההתחלה');
+  if((parse(d2)-parse(d1))/864e5 > 31) return toast('אפשר לתפוס עד חודש בבת אחת');
+  const segs=buildSegments(d1,start,d2,end);
+  if(!segs.length) return toast('כל הזמן שנבחר הוא שבת / חג');
+  try{
+    const list=await api.bookings(d1,d2);           // נתונים עדכניים מהשרת לבדיקה
+    for(const s of segs){ const c=conflict(s,purpose,list); if(c) return toast(c); }
+    const grp = segs.length>1 ? Date.now().toString(36)+Math.random().toString(36).slice(2,6) : null;
+    await api.addBookings(segs.map(s=>({...s,purpose,driver:S.user,grp})));
+    closeSheet('req'); toast('נשמר ✔');
+    await ensureMonthOf(d1); await load(); openDay(d1);
+  }catch(e){ toast('שגיאה בשמירה: '+e.message.slice(0,100)); }
+}
+
+/* ---------- הגדרות ---------- */
+function srvForm(){
+  const c=LS.get('car_cfg',{});
+  return `<label>כתובת השרת (Project URL)</label><input id="sUrl" style="width:100%" dir="ltr" value="${c.url||SUPABASE_URL}" placeholder="https://xxxx.supabase.co">
+  <label>מפתח (anon / publishable key)</label><input id="sKey" style="width:100%" dir="ltr" value="${c.key||SUPABASE_KEY}">
+  <div class="row" style="margin-top:10px"><button class="btn" onclick="saveSrv()">שמור חיבור</button>
+  <button class="btn sec" onclick="clearSrv()">עבודה מקומית</button></div>
+  <p style="font-size:12px;color:var(--mut)">${remote()?'✔ מחובר לשרת':'כרגע במצב מקומי – הנתונים לא משותפים'}</p>`;
+}
+async function saveSrv(){
+  LS.set('car_cfg',{url:$('sUrl').value.trim(),key:$('sKey').value.trim()});
+  try{ await rq('GET','car_users?select=name&limit=1'); toast('החיבור לשרת תקין ✔'); }catch(e){ toast('החיבור נכשל: '+e.message.slice(0,100)); }
+  if(S.user) load();
+}
+function clearSrv(){ LS.set('car_cfg',{}); toast('עברת למצב מקומי'); if(S.user) load(); }
+function toggleSrv(e){ e.preventDefault(); const el=$('loginSrv'); el.innerHTML=srvForm(); el.classList.toggle('hidden'); }
+
+function openSettings(){
+  let wd=''; DAYNAMES.forEach((n,i)=>wd+=`<option value="${i}">${n}</option>`);
+  const body=`
+  <div class="card"><b>⏱ זמנים קבועים</b>
+    <p style="font-size:12px;color:var(--mut);margin:4px 0">נרשמים על שמך ומופיעים כל שבוע ביום שנבחר</p>
+    <label>יום בשבוע</label><select id="rcW" style="width:100%">${wd}</select>
+    <label>משעה</label><div class="row">${hourSel('rcFH',8)} : ${minSel('rcFM',0)}</div>
+    <label>עד שעה</label><div class="row">${hourSel('rcTH',10,24)} : ${minSel('rcTM',0)}</div>
+    <label>מטרה</label>${purposeSel('rcP')}
+    <div style="margin-top:10px"><button class="btn" onclick="addRecurring()">הוסף זמן קבוע</button></div>
+    <div id="rcList" style="margin-top:12px"></div></div>
+  <div class="card"><b>🕯 זמני שבת</b>
+    <label>ערב שבת / חג – הרכב לא זמין משעה</label><div class="row">${hourSel('shFH',Math.floor(S.sh.fri/60))} : ${minSel('shFM',S.sh.fri%60)}</div>
+    <label>מוצאי שבת / חג – זמין משעה</label><div class="row">${hourSel('shSH',Math.floor(S.sh.sat/60))} : ${minSel('shSM',S.sh.sat%60)}</div>
+    <div style="margin-top:10px"><button class="btn" onclick="saveShabbat()">שמור</button></div></div>
+  <div class="card"><b>🔑 קוד הכניסה שלי</b>
+    <label>קוד חדש</label><input id="newPin" type="password" inputmode="numeric">
+    <button class="btn" onclick="changePin()">עדכן</button></div>
+  <div class="card"><b>🌐 חיבור לשרת</b>${srvForm()}</div>
+  <button class="btn red big" onclick="logout()">יציאה (${S.user})</button>
+  <p style="text-align:center;font-size:12px;color:var(--mut)">גרסה ${APP_VERSION}</p>`;
+  sheet('set','הגדרות',body); renderRecList();
+}
+function renderRecList(){
+  const el=$('rcList'); if(!el) return;
+  el.innerHTML = S.recurring.length ? S.recurring.map(r=>`<div class="list-item ${PURPOSE[r.purpose].cls}"><div>
+    <b>${DAYNAMES[r.weekday]}</b> ${hm(r.start_min)}–${hm(r.end_min)} · ${PURPOSE[r.purpose].short} · ${r.driver}</div>
+    ${r.driver===S.user?`<button class="btn sec" style="padding:4px 10px" onclick="delRecurring(${r.id})">מחק</button>`:''}</div>`).join('')
+    : '<p style="font-size:13px;color:var(--mut)">אין זמנים קבועים</p>';
+}
+async function addRecurring(){
+  const start=readTime('rcFH','rcFM'); let end=readTime('rcTH','rcTM'); if(parseInt($('rcTH').value)===24) end=24*60;
+  const purpose=$('rcP').value, weekday=parseInt($('rcW').value);
+  if(!purpose) return toast('יש לבחור מטרה');
+  if(end<=start) return toast('שעת הסיום חייבת להיות אחרי שעת ההתחלה');
+  try{ await api.addRecurring({weekday,start_min:start,end_min:end,purpose,driver:S.user}); toast('נוסף ✔'); await load(); renderRecList(); }
+  catch(e){ toast('שגיאה: '+e.message.slice(0,100)); }
+}
+async function delRecurring(id){
+  if(!confirm('למחוק את הזמן הקבוע?')) return;
+  try{ await api.delRecurring(id); await load(); renderRecList(); }catch(e){ toast('שגיאה: '+e.message.slice(0,100)); }
+}
+async function saveShabbat(){
+  const v={fri:readTime('shFH','shFM'), sat:readTime('shSH','shSM')};
+  try{ await api.setShabbat(v); S.sh=v; toast('נשמר ✔'); load(); }catch(e){ toast('שגיאה: '+e.message.slice(0,100)); }
+}
+async function changePin(){
+  const p=$('newPin').value.trim(); if(p.length<4) return toast('לפחות 4 ספרות');
+  try{ await api.setPin(S.user,p); toast('הקוד עודכן ✔'); $('newPin').value=''; }catch(e){ toast('שגיאה: '+e.message.slice(0,100)); }
+}
+
+/* ---------- כניסה ---------- */
+let pickName=null;
+function renderLogin(){
+  $('loginNames').innerHTML=DRIVERS.map(n=>`<button class="${n===pickName?'on':''}" onclick="pickName='${n}';renderLogin()">${n}</button>`).join('');
+}
+async function doLogin(){
+  if(!pickName) return toast('בחר שם');
+  const pin=$('loginPin').value.trim();
+  try{
+    if(await api.checkPin(pickName,pin)){ S.user=pickName; LS.set('car_user',pickName); $('loginPin').value=''; start(); }
+    else toast('קוד שגוי');
+  }catch(e){ toast('אין חיבור לשרת: '+e.message.slice(0,100)); }
+}
+function logout(){ S.user=null; LS.set('car_user',null); closeSheet('set'); start(); }
+function start(){
+  if(S.user){ $('login').classList.add('hidden'); $('main').classList.remove('hidden'); $('who').textContent=S.user; renderMonth(); load(); }
+  else { $('main').classList.add('hidden'); $('login').classList.remove('hidden'); $('verLogin').textContent='גרסה '+APP_VERSION; renderLogin(); }
+}
+start();
+</script>
+</body>
+</html>
