@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="10dp"
+    android:background="@drawable/widget_bg">
+    <TextView android:id="@+id/w_title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="🚗 יומן הרכב" android:textSize="13sp" android:textColor="#444444"/>
+    <TextView android:id="@+id/w_name" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="טוען…" android:textSize="24sp" android:textStyle="bold" android:textColor="#1F2933"/>
+    <TextView android:id="@+id/w_when" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textSize="13sp" android:textColor="#333333" android:gravity="center"/>
+    <TextView android:id="@+id/w_count" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textSize="19sp" android:textStyle="bold" android:textColor="#1E3A5F" android:layout_marginTop="2dp"/>
+    <TextView android:id="@+id/w_now" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textSize="12sp" android:textColor="#8A1F1F"/>
+    <TextView android:id="@+id/w_upd" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textSize="10sp" android:textColor="#777777"/>
+</LinearLayout>

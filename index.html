@@ -150,7 +150,7 @@ select.fam{background:var(--fam)} select.pri{background:var(--pri)}
 const SUPABASE_URL = 'https://ivvkwbzzfcnvebbrmucu.supabase.co';   // לדוגמה: https://xxxxx.supabase.co
 const SUPABASE_KEY = 'sb_publishable_Q-pbwF73mllXT3miUiWCmQ_bvIsvhqr';   // ה-anon / publishable key
 
-const APP_VERSION = '1.4';   // לעדכן בכל גרסה חדשה
+const APP_VERSION = '1.5';   // לעדכן בכל גרסה חדשה
 
 const DRIVERS = ['אברהם','בצלאל','בת שבע','צופיה'];
 const PURPOSE = { family:{label:'לצורך משפחה / אמא',short:'משפחה',cls:'fam'}, private:{label:'לצורך פרטי',short:'פרטי',cls:'pri'} };
@@ -443,11 +443,11 @@ function srvForm(){
   <p style="font-size:12px;color:var(--mut)">${remote()?'✔ מחובר לשרת':'כרגע במצב מקומי – הנתונים לא משותפים'}</p>`;
 }
 async function saveSrv(){
-  LS.set('car_cfg',{url:$('sUrl').value.trim(),key:$('sKey').value.trim()});
+  LS.set('car_cfg',{url:$('sUrl').value.trim(),key:$('sKey').value.trim()}); syncNative();
   try{ await rq('GET','car_users?select=name&limit=1'); toast('החיבור לשרת תקין ✔'); }catch(e){ toast('החיבור נכשל: '+e.message.slice(0,100)); }
   if(S.user) load();
 }
-function clearSrv(){ LS.set('car_cfg',{}); toast('עברת למצב מקומי'); if(S.user) load(); }
+function clearSrv(){ LS.set('car_cfg',{}); syncNative(); toast('עברת למצב מקומי'); if(S.user) load(); }
 function toggleSrv(e){ e.preventDefault(); const el=$('loginSrv'); el.innerHTML=srvForm(); el.classList.toggle('hidden'); }
 
 function openSettings(){
@@ -696,6 +696,16 @@ async function viewRec(t,id){
   }catch(e){ const vb=$('vBody'); if(vb) vb.textContent='שגיאה בטעינת הקובץ: '+e.message.slice(0,120); }
 }
 
+/* ---------- העברת פרטים לחלק של הטלפון (ווידג'ט + התראות) ---------- */
+function nativePrefs(){
+  const C=window.Capacitor; if(!C || !C.isNativePlatform || !C.isNativePlatform()) return null;
+  return (C.Plugins && C.Plugins.Preferences) || (C.registerPlugin && C.registerPlugin('Preferences')) || null;
+}
+function syncNative(){
+  const P=nativePrefs(); if(!P) return; const c=cfg();
+  try{ P.set({key:'car_user',value:S.user||''}); P.set({key:'car_url',value:c.url}); P.set({key:'car_key',value:c.key}); }catch(e){}
+}
+
 /* ---------- כניסה ---------- */
 let pickName=null;
 function renderLogin(){
@@ -711,6 +721,7 @@ async function doLogin(){
 }
 function logout(){ S.user=null; LS.set('car_user',null); closeSheet('set'); start(); }
 function start(){
+  syncNative();
   if(S.user){ $('login').classList.add('hidden'); $('main').classList.remove('hidden'); $('who').textContent=S.user; renderMonth(); load(); }
   else { $('main').classList.add('hidden'); $('login').classList.remove('hidden'); $('verLogin').textContent='גרסה '+APP_VERSION; renderLogin(); }
 }
