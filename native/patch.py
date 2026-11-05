@@ -22,6 +22,21 @@ if 'CarWidget' not in m:
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/car_widget_info" />
         </receiver>
     </application>''', 1)
+if 'REQUEST_INSTALL_PACKAGES' not in m:
+    m = m.replace('<application', '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n    <application', 1)
+if 'fileprovider' not in m.lower():
+    m = m.replace('</application>', '''    <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider"
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>''', 1)
+fp = src + '/res/xml/file_paths.xml'
+if not os.path.exists(fp):
+    open(fp, 'w', encoding='utf-8').write('<?xml version="1.0" encoding="utf-8"?>\n<paths xmlns:android="http://schemas.android.com/apk/res/android">\n    <cache-path name="cache" path="." />\n</paths>\n')
+else:
+    x = open(fp, encoding='utf-8').read()
+    if 'cache-path' not in x:
+        open(fp, 'w', encoding='utf-8').write(x.replace('</paths>', '    <cache-path name="cache" path="." />\n</paths>'))
 open(src + '/AndroidManifest.xml', 'w', encoding='utf-8').write(m)
 g = 'android/app/build.gradle'
 t = open(g, encoding='utf-8').read()
