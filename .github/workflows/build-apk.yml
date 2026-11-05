@@ -39,6 +39,9 @@ jobs:
       - name: App icon
         run: npx --yes @capacitor/assets generate --android
 
+      - name: Widget and notifications
+        run: python3 native/patch.py
+
       - name: Set version (number from index.html, build code auto-increases)
         run: |
           VER=$(grep -oP "APP_VERSION = '\K[^']+" index.html || echo "1.0")
